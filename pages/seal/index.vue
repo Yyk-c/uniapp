@@ -16,7 +16,7 @@
     </view>
 	<view class="separator"></view>
     <view class="row">
-      <view class="label">填单时间：</view>
+      <view class="label">填单时间是：</view>
       <view class="value">2023-08-26</view>
     </view>
 	<view class="separator"></view>
