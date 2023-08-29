@@ -37,7 +37,7 @@
 .approval-node {
   display: flex;
   align-items: center;
-  margin-bottom: 140rpx;
+  margin-bottom: 20rpx;
   position: relative;
 }
 .node-status {

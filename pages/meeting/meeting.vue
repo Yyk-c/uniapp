@@ -16,47 +16,60 @@
 			      <view v-for="(meeting, index) in meetingList" :key="index" class="meeting-item" > 
 			        <view class="title">
 						<view class="titleCSS">
-						{{ meeting.title }}
+						{{ meeting.meeting_topic }}
 						</view>
-						<view class="meeting-status" :class="{'blue': meeting.inProgress, 'gray': !meeting.inProgress}">
-						  {{ meeting.inProgress ? '进行中' : '已结束' }}
+						<view class="meeting-status" :class="{'gray': meeting.status == '已结束' || meeting.status == '未通过' || meeting.status == '未审批', 'green2': meeting.status == '进行中','yellow':meeting.status == '已通过未开始'}">
+						  {{ meeting.status }}
 						</view>
 					</view>
 			        <view class="info">
 			          <view class="info-item">
 			            <text class="label">会议室：
-						<text class="value">{{ meeting.room }}</text>
+						<text class="value">{{ meeting.room_name }}</text>
 						</text>
 			          </view>
 			          <view class="info-item">
 			            <text class="label">开始时限：
 						<text class="value">
-						  {{ meeting.startTime }}
+						  {{ meeting.begin_time }}
 						</text>
 						</text>
-						<text class="status-label" :class="{'green': meeting.checkedIn, 'red': !meeting.checkedIn}">
-						  {{ meeting.checkedIn ? '已签到' : '未签到' }}
+						<text class="status-label" :class="{'green': meeting.sign_status=='已签到'||meeting.sign_status=='已签退'||meeting.sign_status=='未签退', 'red': meeting.sign_status=='未签到'}">
+						  {{ meeting.sign_status=='已签退'||meeting.sign_status=='未签退'||meeting.sign_status=='已签到'?'已签到':'未签到' }}
 						</text>
 			          </view>
 			          <view class="info-item">
-			            <text class="label">处理时限：
+			            <text class="label">结束时间：
 							<text class="value">
-							  {{ meeting.endTime }}
+							  {{ meeting.end_time }}
 							</text>
 						</text>
-						<text class="status-label" :class="{'green': meeting.checkedOut, 'red': !meeting.checkedOut}">
-						  {{ meeting.checkedOut ? '已签退' : '未签退' }}
+						<text class="status-label" :class="{'green': meeting.sign_status=='已签退', 'red': meeting.sign_status=='未签退'||meeting.sign_status=='未签到'}">
+						  {{ meeting.sign_status=='已签到'||meeting.sign_status=='未签到'||meeting.sign_status=='未签退' ? '未签退' : '已签退' }}
 						</text>
 			          </view>
 			        </view>
 			      </view>
 			    </scroll-view>
 			  </view>
+			  <view class="button-container">		  
+			      <view class="button" style="background-color: #5CC3F9;">
+			        <image src="../../static/logo.png" class="button-image"></image>
+			  					<text class="button-text">扫码签到/签退</text>
+			      </view>
+			      <view class="button" style="background-color: #1E8FFE;">
+			        <image src="../../static/logo.png" class="button-image"></image>
+			  					<text class="button-text">手工签到/签退</text>
+			      </view>
+			    </view>
+			  
 	</view>
+			
 </template>
 
 <script>
 	import swiperNavBar from '@/components/common/swiperNavBar/swiperNavBar.vue';
+	import hrUrl from "@/common/hrReqConst.js";
 	export default {
 		data() {
 			return {
@@ -76,58 +89,34 @@
 				topHeight: "0px", //吸顶高度
 				meetingList: [
 				        {
-				          title: '会议标题会议标题会议标题会议标题会议标题会议标题会议标题会议标题会议标题会议标题会议标题会议标题会议标题会议标题会议标题1',
-				          room: '会议室A',
-				          startTime: '09:00',
-				          endTime: '10:30',
-				          checkedIn: true,
-				          checkedOut: false,
-				          inProgress: true
-				        },
-				        {
-				          title: '会议标题2',
-				          room: '会议室B',
-				          startTime: '13:00',
-				          endTime: '14:30',
-				          checkedIn: false,
-				          checkedOut: true,
-				          inProgress: false
-				        },{
-				          title: '会议标题1',
-				          room: '会议室A',
-				          startTime: '09:00',
-				          endTime: '10:30',
-				          checkedIn: true,
-				          checkedOut: true,
-				          inProgress: true
-				        },{
-				          title: '会议标题1',
-				          room: '会议室A',
-				          startTime: '09:00',
-				          endTime: '10:30',
-				          checkedIn: false,
-				          checkedOut: false,
-				          inProgress: false
-				        },{
-				          title: '会议标题1',
-				          room: '会议室A',
-				          startTime: '09:00',
-				          endTime: '10:30',
-				          checkedIn: true,
-				          checkedOut: false,
-				          inProgress: true
-				        },{
-				          title: '会议标题1',
-				          room: '会议室A',
-				          startTime: '09:00',
-				          endTime: '10:30',
-				          checkedIn: true,
-				          checkedOut: false,
-				          inProgress: true
-				        },
+
+				        }
 						]
 			}
 		},
+		
+		onLoad(param) {
+			this.param = param;
+			console.log(param)
+			//判断传过来的参数
+			if (param && param.userInfo) {
+				let obj = JSON.parse(param.userInfo);
+				if (obj) {
+					let option = obj.loadInfo;
+					this.hrpId = option.hrpId;
+					this.hrpPwd = option.hrpPwd;
+					this.userId = "a5d2e406ad524319892399a5bcabd8b4";
+					this.hrpUnitId = option.hrpUnitId;
+					this.authDate = option.authDate;
+					this.orgNo = option.orgNo;
+					this.context = option.context;
+					this.dataOption = option;
+					this.getData();
+				}
+			}
+		
+		},
+		
 		methods: {
 			 currentTab(index, item) {
 			 	console.log(index);
@@ -135,6 +124,53 @@
 				this.swiper.swiperTabIdx = index;
 				this.swiper.scrollIntoView = Math.max(0, index - 1);
 			 },
+			 getData(){
+				 uni.request({
+				 	url: hrUrl,
+				 	method: 'GET',
+				 	dataType: 'json',
+				 	data: {
+				 		'hrpId': this.hrpId,
+				 		'hrpPwd': this.hrpPwd,
+				 		'hrpUnitId': this.hrpUnitId,
+				 		'authDate': this.authDate,
+				 		'orgNo': this.orgNo,
+				 		'context': this.context,
+				 		'codeBlockName': 'oa_meeting_getlist()',
+				 		'params': '{"user_id":"'+this.userId+'","pageNum":0,"pageSize":30,"type":"1","date":"'+this.formatDate(new Date())+'"}'
+				 	},
+				 	success: res => {
+				 		let data = res.data.data;
+				 		this.meetingList = data.rows;
+						
+				 	},
+				 	fail: () => {
+				 
+				 	},
+				 	complete: () => {
+				 		
+				 
+				 	}
+				 });
+			 },
+			 /**
+			  * 格式化日期对象
+			  * @para {date object} 日期对象
+			  * return {string} yyyy-mm-dd
+			  */
+			 formatDate(dateObj) {
+			 	var year = dateObj.getFullYear(),
+			 		month = dateObj.getMonth() + 1,
+			 		day = dateObj.getDate();
+			 
+			 	return year + '-' + this.formatNum(month) + '-' + this.formatNum(day);
+			 },
+			 formatNum(num) {
+			 	if (num < 10) {
+			 		num = '0' + num;
+			 	}
+			 	return num;
+			 }
 		},
 		components:{
 			swiperNavBar
@@ -148,13 +184,49 @@
 		/* height: calc(6vh); */
 		background-color: #ffffff;
 	},
+	
+	
+	.button-container {
+		
+	  display: flex;
+	  justify-content: space-between;
+	}
+	
+	.button {
+	  display: flex;
+	  flex-direction: row;
+	  align-items: center;
+	  justify-content: center;
+	  width: 300rpx;
+	  height: 90rpx;
+	  background-color: #EFEFEF;
+	  border-radius: 46rpx;
+	  margin-right: 20rpx;
+	  margin-left: 20rpx;
+	  margin-top: 15rpx;
+	}
 	.meeting-list {
-	  height: 85vh;
+	  height: 78vh;
 	  background-color:#ebebeb;
 	}
 	
 	.scroll-view {
 	  height: 100%;
+	}
+	
+	.button-image {
+	
+	   margin-right: 20rpx;
+	  width: 50rpx;
+	  height: 50rpx;
+	}
+	
+	.button-text {
+	  text-align: center ;
+	  font-size: 28rpx;
+	  margin-top: 10rpx;
+	  color: #FFFFFF;	
+	  font-weight: bold;
 	}
 	
 	.meeting-item {
@@ -239,6 +311,14 @@
 	}
 	
 	.gray {
-	  color: #888;
+	  color: #999999;
 	}
+	.yellow{
+		color:#E0943A ;
+	}
+	.green2{
+		color: #2DD08D;
+	}
+	
+	
 </style>

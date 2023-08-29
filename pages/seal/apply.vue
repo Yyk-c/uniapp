@@ -12,70 +12,72 @@
 			</view>
 			
 			<view class="seal-list">
-			    <scroll-view class="scroll-view" scroll-y>
+			    <scroll-view class="scroll-view" scroll-y  @scrolltolower="lowerBottom" @refresherrefresh="getFresh">
 			      <view v-for="(item, index) in sealList" :key="index" class="seal-item" > 
 			        <view class="title">
 						<view class="currentType">
-							<uni-tag text="紧急" type="primary" size="small" />
+							<uni-tag text="紧急" type="warning" size="small" v-if="item.urgent_level=='紧急'"/>
+							<uni-tag text="特急" type="error" size="small" v-if="item.urgent_level=='特急'"/>
+							<uni-tag text="常规" type="primary" size="small" v-if="item.urgent_level=='常规'"/>
 						</view>
 						<view class="titleCSS">
-						印章:{{ item.title }}
+						印章:{{ item.seal_name }}
 						</view>
-						<view class="seal-status" :class="{'green': item.inProgress, 'red': !item.inProgress}">
-						  {{ item.inProgress ? '审批通过' : '审批不通过' }}
+						<view class="seal-status" :class="{'green':item.status===20,'red':item.status===30||item.status===40}">
+						  {{ item.status_str}}
 						</view>
 					</view>
 			          <view class="info">
 						<view class="info-item">
 			            <text class="label">印章文件名称：
-						<text class="value">{{ item.name }}</text>
+						<text class="value">{{ item.file_name }}</text>
 						</text>
 			          </view>
 					  <view class="info-item">
 			            <text class="label">印章件所属单位：
-						<text class="value">{{ item.position }}</text>
+						<text class="value">{{ item.file_unit }}</text>
 						</text>
 			          </view>
 			          <view class="info-item">
 			            <text class="label">申请人：
-						<text class="value">{{ item.person }}</text>
+						<text class="value">{{ item.apply_user }}</text>
 						</text>
 			          </view>
 			          <view class="info-item">
-			            <text class="label">处理时限：
+			            <text class="label">处理时限:
 						<text class="value">
-						  {{ item.startTime }}
+						  {{ item.date_limit }}
 						</text>
 						</text>
 			          </view>
 						<view class="info-item">
-			            <text class="label">填单时限：
+			            <text class="label">填单时限:
 						<text class="value">
-						  {{ item.startTime }}
+						  {{ item.create_time }}
 						</text>
 						</text>
 			          </view>
 			          <view class="info-item">
-			            <text class="label">用印时限：
+			            <text class="label">用印时限:
 							<text class="value">
-							  {{ item.endTime }}
+							  {{ item.time_range }}
 							</text>
 						</text>
 			          </view>
 					  <view class="rounded-box">
-					      <input type="text" value="备注：盖一下文件" readonly>
+					      <input type="text"  readonly>{{item.remark}}</input>
 					    </view>
 					  
 			        </view>
-					<!-- 头像框absolute定位 -->
-					 <view class="profile-picture">
-					      <!-- 添加头像框的叠加层 -->
+					<!-- <view class="profile-picture">
 					      <image src="../../static/logo.png" class="frame" />
-					    </view>
+					</view> -->
 					
 			      </view>
 			    </scroll-view>
 			  </view>
+			  
+			  
 	</view>
 </template>
 
@@ -83,13 +85,14 @@
 	import uniIcons from '@/components/common/uni-icons/uni-icons.vue';
 	import swiperNavBar from '@/components/common/swiperNavBar/swiperNavBar.vue';
 	import uniTag from '@/components/common/uni-tag/uni-tag.vue';
+	import hrUrl from "@/common/hrReqConst.js";
 	export default {
 		data() {
 			return {
 				swiper: { //滑动导航栏
 					scrollIntoView: 0, //设置哪个方向可滚动，则在哪个方向滚动到该元素
 					swiperTabList: ['待我审批单','我已审批的'], //导航列表文字
-					swiperTabIdx: 0,
+					swiperTabIdx: 1,
 					swiperCurrentSize: '30rpx', //导航的字体大小
 					swiperColor: '#999999', //导航栏字体未选中前颜色
 					swiperCurrentColor: '#333333', //选中当前导航栏字体颜色
@@ -101,66 +104,80 @@
 				},
 				topHeight: "0px", //吸顶高度
 				sealList: [
-				        {
-				          title: '印章asdasdasdsdasdas名称1',
-				          name: '印章文件名称',
-						  position:'印章单位',
-						  person:'申请人1',
-				          startTime: '09:00',
-				          endTime: '10:30',
-				          inProgress: true
-				        },
-				        {
-				          title: '印章名称2',
-				          name: '印章文件名称',
-						  position:'印章单位',
-						  person:'申请人1',
-				          startTime: '13:00',
-				          endTime: '14:30',
-				          inProgress: false
-				        },{
-				          title: '印章名称1',
-				          name: '印章文件名称',
-						  position:'印章单位',
-						  person:'申请人1',
-				          startTime: '09:00',
-				          endTime: '10:30',
-				          inProgress: true
-				        },{
-				          title: '印章名称1',
-				          name: '印章文件名称',
-						  position:'印章单位',
-						  person:'申请人1',
-				          startTime: '09:00',
-				          endTime: '10:30',
-				          inProgress: false
-				        },{
-				          title: '印章名称1',
-				          name: '印章文件名称',
-						  position:'印章单位',
-						  person:'申请人1',
-				          startTime: '09:00',
-				          endTime: '10:30',
-				          inProgress: true
-				        },{
-				          title: '印章名称1',
-				          name: '印章文件名称',
-						  position:'印章单位',
-						  person:'申请人1',
-				          startTime: '09:00',
-				          endTime: '10:30',
-				          inProgress: true
-				        },
-						]
+						],
+				y:0,
+				limit:5,
 			}
 		},
 		methods: {
 			 currentTab(index, item) {
-			 	console.log(index);
-				console.log(item);
-				this.swiper.swiperTabIdx = index;
-				this.swiper.scrollIntoView = Math.max(0, index - 1);
+				// this.swiper.swiperTabIdx = index;
+				// this.swiper.scrollIntoView = Math.max(0, index - 1);
+				
 			 },
+			 
+			 lowerBottom(){
+				 this.y+=5;
+				 this.getData();
+			 },
+			 getFresh(){
+				 
+			 },
+			 getData(){
+				 
+				 uni.showLoading({
+				 	mask: true,
+				 	title: '查询中'
+				 });
+				 
+			 				 uni.request({
+			 				 	url: hrUrl,
+			 				 	method: 'GET',
+			 				 	dataType: 'json',
+			 				 	data: {
+			 				 		'hrpId': this.hrpId,
+			 				 		'hrpPwd': this.hrpPwd,
+			 				 		'hrpUnitId': this.hrpUnitId,
+			 				 		'authDate': this.authDate,
+			 				 		'orgNo': this.orgNo,
+			 				 		'context': this.context,
+			 				 		'codeBlockName': 'oa_seal_使用情况列表',
+			 				 		'params': '{"start":"'+this.y+'","limit":"'+this.limit+'"}'
+			 				 	},
+			 				 	success: res => {
+			 				 		let data = res.data.data.data;
+									this.sealList = this.sealList.concat(data)
+
+			 				 	},
+			 				 	fail: () => {
+			 				 
+			 				 	},
+			 				 	complete: () => {
+			 				 		uni.hideLoading();
+			 				 
+			 				 	}
+			 				 });
+			 },
+		},
+		
+		onLoad(param) {
+			this.param = param;
+			//判断传过来的参数
+			if (param && param.userInfo) {
+				let obj = JSON.parse(param.userInfo);
+				if (obj) {
+					let option = obj.loadInfo;
+					this.hrpId = option.hrpId;
+					this.hrpPwd = option.hrpPwd;
+					this.userId = "a5d2e406ad524319892399a5bcabd8b4";
+					this.hrpUnitId = option.hrpUnitId;
+					this.authDate = option.authDate;
+					this.orgNo = option.orgNo;
+					this.context = option.context;
+					this.dataOption = option;
+					this.getData();
+				}
+			}
 		},
 		components:{
 			swiperNavBar,
@@ -175,7 +192,7 @@
 		background-color: #ffffff;
 	},
 	.seal-list {
-	  height: 85vh;
+	  height: 87vh;
 	  background-color:#ebebeb;
 	}
 	
@@ -183,9 +200,43 @@
 	  height: 100%;
 	}
 	
+	.button-container {
+		
+	  display: flex;
+	  justify-content: space-between;
+	}
+	
+	.button {
+	  display: flex;
+	  flex-direction: row;
+	  align-items: center;
+	  justify-content: center;
+	  width: 300rpx;
+	  height: 90rpx;
+	  background-color: #EFEFEF;
+	  border-radius: 46rpx;
+	  margin-right: 20rpx;
+	  margin-left: 20rpx;
+	  margin-top: 15rpx;
+	}
+	
+	.button-image {
+	   margin-right: 20rpx;
+	  width: 50rpx;
+	  height: 50rpx;
+	}
+	
+	.button-text {
+	  text-align: center ;
+	  font-size: 28rpx;
+	  margin-top: 10rpx;
+	  color: #FFFFFF;	
+	  font-weight: bold;
+	}
+	
 	.profile-picture {
 	    position: absolute;
-	    top: 80rpx;
+	    top: calc(24%);
 	    right: 20rpx;
 	    width: 200rpx; /* 调整头像框的宽度 */
 	    height: 230rpx; /* 调整头像框的高度 */
@@ -234,7 +285,7 @@
 	overflow: hidden;
 	white-space: nowrap;
 	text-overflow: ellipsis;
-	width: 450rpx;
+	width: 55%;
 	}
 	.info {
 	  margin-top: 10rpx;
@@ -283,7 +334,7 @@
 	  border: 1rpx solid #ccc;
 	  border-radius: 10rpx; /* 设置圆角大小 */
 	  padding: 20rpx;
-	  width: 670rpx;
+	  width: 94%;
 	  background-color: #F3F3F3;
 	}
 	
